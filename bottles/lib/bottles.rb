@@ -1,6 +1,9 @@
 class Bottles
-  def verse(number)
-    return penultimate_verse if number == 1
+  def verses(*numbers)
+    numbers.map do |number|
+      verse(number)
+    end.join("\n")
+  end
 
   def verse(number)
     case number
