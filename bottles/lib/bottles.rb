@@ -1,6 +1,6 @@
 class Bottles
-  def verses(*numbers)
-    numbers.map do |number|
+  def verses(from, to)
+    (to..from).to_a.reverse.map do |number|
       verse(number)
     end.join("\n")
   end
