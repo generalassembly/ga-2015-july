@@ -1,3 +1,21 @@
+class Fixnum
+  def to_bottle_number
+
+    (BottleNumber.descendants.keep_if { |klass|
+      klass::POSITION == self
+    }.first || BottleNumber).new(self)
+
+    # case self
+    # when 0
+    #   ZeroBottles
+    # when 1
+    #   OneBottleLeft
+    # else
+    #   BottleNumber
+    # end.new(self)
+  end
+end
+
 class Bottles
 
   def song
@@ -9,59 +27,76 @@ class Bottles
   end
 
   def verse(number)
-    bottle_number      = BottleNumber.new(number)
-    next_bottle_number = BottleNumber.new(bottle_number.successor)
-    "#{bottle_number.amount.capitalize} #{bottle_number.container} of beer on the wall, " +
-    "#{bottle_number.amount} #{bottle_number.container} of beer.\n" +
+    bottle_number = number.to_bottle_number
+    "#{bottle_number.to_s.capitalize} of beer on the wall, " +
+    "#{bottle_number} of beer.\n" +
     "#{bottle_number.action}, " +
-    "#{next_bottle_number.amount} #{next_bottle_number.container} of beer on the wall.\n"
+    "#{bottle_number.successor} of beer on the wall.\n"
   end
 end
 
 class BottleNumber
   attr_reader :number
 
+  def self.descendants
+    ObjectSpace.each_object(Class).select do |klass|
+      klass < self
+    end
+  end
+
   def initialize(number)
     @number = number
   end
 
   def container
-    if number == 1
-      "bottle"
-    else
-      "bottles"
-    end
+    "bottles"
   end
 
   def pronoun
-    if number == 1
-      "it"
-    else
-      "one"
-    end
+    "one"
   end
 
   def amount
-    if number == 0
-      "no more"
-    else
-      number.to_s
-    end
+    number.to_s
   end
 
   def action
-    if number == 0
-      "Go to the store and buy some more"
-    else
-      "Take #{pronoun} down and pass it around"
-    end
+    "Take #{pronoun} down and pass it around"
   end
 
   def successor
-    if number == 0
-      99
-    else
-      number - 1
-    end
+    (number - 1).to_bottle_number
+  end
+
+  def to_s
+    "#{amount} #{container}"
+  end
+end
+
+class ZeroBottles < BottleNumber
+  POSITION = 0.freeze
+
+  def amount
+    "no more"
+  end
+
+  def action
+    "Go to the store and buy some more"
+  end
+
+  def successor
+    99.to_bottle_number
+  end
+end
+
+class OneBottleLeft < BottleNumber
+  POSITION = 1.freeze
+
+  def container
+    "bottle"
+  end
+
+  def pronoun
+    "it"
   end
 end
