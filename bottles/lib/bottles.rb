@@ -1,30 +1,22 @@
-module BottleRegistry
+module BottleFactory
+  @@registry = Hash.new
 
-  def self.included(base)
-    base.extend(ClassMethods)
+  def self.for(position)
+    (@@registry[position.to_s] || BottleNumber).new(position)
   end
 
-  module ClassMethods
-    @@registry = Hash.new
-
-    def registry
-      @@registry
-    end
-
-    def register(position, klass)
-      @@registry[position.to_s] = klass
-    end
+  def register(position)
+    @@registry[position.to_s] = self
   end
 end
 
 class Fixnum
   def to_bottle_number
-    (BottleNumber.registry[self.to_s] || BottleNumber).new(self)
+    BottleFactory.for(self)
   end
 end
 
 class Bottles
-
   def song
     verses(99, 0)
   end
@@ -43,14 +35,7 @@ class Bottles
 end
 
 class BottleNumber
-  include BottleRegistry
-  attr_reader :number
-
-  def self.descendants
-    ObjectSpace.each_object(Class).select do |klass|
-      klass < self
-    end
-  end
+  attr_reader :number  
 
   def initialize(number)
     @number = number
@@ -79,10 +64,12 @@ class BottleNumber
   def to_s
     "#{amount} #{container}"
   end
+
 end
 
 class ZeroBottles < BottleNumber
-  POSITION = 0.freeze
+  extend BottleFactory
+  register 0
 
   def amount
     "no more"
@@ -95,12 +82,11 @@ class ZeroBottles < BottleNumber
   def successor
     99.to_bottle_number
   end
-
-  register(POSITION, self)
 end
 
 class OneBottleLeft < BottleNumber
-  POSITION = 1.freeze
+  extend BottleFactory
+  register 1
 
   def container
     "bottle"
@@ -109,14 +95,13 @@ class OneBottleLeft < BottleNumber
   def pronoun
     "it"
   end
-
-  register(POSITION, self)
 end
 
-class Bottle99
-  include BottleRegistry
+class NinetyNineBottles
+  extend BottleFactory
+  register 99
+
   attr_reader :number
-  POSITION = 99.freeze
 
   def initialize(number)
     @number = number
@@ -145,6 +130,4 @@ class Bottle99
   def to_s
     "#{amount} #{container}"
   end
-
-  register(POSITION, self)
 end
