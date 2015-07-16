@@ -23,3 +23,20 @@ class Farm
     "Old MacDonald had a farm, E-I-E-I-O."
   end
 end
+
+class UnknownAnimal
+  def sound
+    "<silence>"
+  end
+
+  def species
+    "<silence>"
+  end
+end
+
+class AnimalsWrapper
+  def self.all(animals)
+    Animal.all(animals).map {|a| a || UnknownAnimal.new}
+  end
+end
+
