@@ -1,18 +1,28 @@
+module BottleRegistry
+
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
+  module ClassMethods
+    @@registry = Hash.new
+
+    def registry
+      @@registry
+    end
+
+    def register(position, klass)
+      @@registry[position.to_s] = klass
+    end
+  end
+end
+
 class Fixnum
+  include BottleRegistry
+
+
   def to_bottle_number
-
-    (BottleNumber.descendants.keep_if { |klass|
-      klass::POSITION == self
-    }.first || BottleNumber).new(self)
-
-    # case self
-    # when 0
-    #   ZeroBottles
-    # when 1
-    #   OneBottleLeft
-    # else
-    #   BottleNumber
-    # end.new(self)
+    (self.class.registry[self.to_s] || BottleNumber).new(self)
   end
 end
 
@@ -36,6 +46,7 @@ class Bottles
 end
 
 class BottleNumber
+  include BottleRegistry
   attr_reader :number
 
   def self.descendants
@@ -74,6 +85,7 @@ class BottleNumber
 end
 
 class ZeroBottles < BottleNumber
+  include BottleRegistry
   POSITION = 0.freeze
 
   def amount
@@ -87,9 +99,12 @@ class ZeroBottles < BottleNumber
   def successor
     99.to_bottle_number
   end
+
+  register(POSITION, self)
 end
 
 class OneBottleLeft < BottleNumber
+  include BottleRegistry
   POSITION = 1.freeze
 
   def container
@@ -99,4 +114,42 @@ class OneBottleLeft < BottleNumber
   def pronoun
     "it"
   end
+
+  register(POSITION, self)
+end
+
+class Bottle99
+  include BottleRegistry
+  attr_reader :number
+  POSITION = 99.freeze
+
+  def initialize(number)
+    @number = number
+  end
+
+  def container
+    "bottles"
+  end
+
+  def pronoun
+    "one"
+  end
+
+  def amount
+    number.to_s
+  end
+
+  def action
+    "Take #{pronoun} down and pass it around"
+  end
+
+  def successor
+    (number - 1).to_bottle_number
+  end
+
+  def to_s
+    "#{amount} #{container}"
+  end
+
+  register(POSITION, self)
 end
