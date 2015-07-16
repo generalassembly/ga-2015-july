@@ -18,11 +18,8 @@ module BottleRegistry
 end
 
 class Fixnum
-  include BottleRegistry
-
-
   def to_bottle_number
-    (self.class.registry[self.to_s] || BottleNumber).new(self)
+    (BottleNumber.registry[self.to_s] || BottleNumber).new(self)
   end
 end
 
@@ -85,7 +82,6 @@ class BottleNumber
 end
 
 class ZeroBottles < BottleNumber
-  include BottleRegistry
   POSITION = 0.freeze
 
   def amount
@@ -104,7 +100,6 @@ class ZeroBottles < BottleNumber
 end
 
 class OneBottleLeft < BottleNumber
-  include BottleRegistry
   POSITION = 1.freeze
 
   def container
